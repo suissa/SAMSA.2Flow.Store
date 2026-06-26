@@ -179,6 +179,19 @@ package object io {
      * @return a [[DataFrame]][(String, String, String)]
      */
     def rdfxml: String => DataFrame = reader.format("rdf").option("lang", Lang.RDFXML.getLabel).load
+
+    /**
+     * Load 2flow graph notation into a [[Dataset]] of Jena triples.
+     *
+     * Each input line must follow `Subject -> predicate:Object`; terms are expanded
+     * against `baseUri` and numeric objects become typed literals.
+     *
+     * @return a [[Dataset]][Triple]
+     */
+    def flow(baseUri: String = FlowRDFReader.DefaultBaseUri): String => Dataset[Triple] = path => {
+      val spark = reader.sparkSession
+      FlowRDFReader.loadDataset(spark, path, baseUri)
+    }
   }
 
   // the RDD methods
@@ -429,6 +442,18 @@ package object io {
      */
     def ntriples(allowBlankLines: Boolean = false): String => RDD[Triple] = path => {
       NTripleReader.load(spark, path)
+    }
+
+    /**
+     * Load 2flow graph notation into an [[RDD]] of Jena triples.
+     *
+     * Each input line must follow `Subject -> predicate:Object`; terms are expanded
+     * against `baseUri` and numeric objects become typed literals.
+     *
+     * @return the [[RDD]] of triples
+     */
+    def flow(baseUri: String = FlowRDFReader.DefaultBaseUri): String => RDD[Triple] = path => {
+      FlowRDFReader.load(spark, path, baseUri)
     }
 
     /**
