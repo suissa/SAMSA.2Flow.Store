@@ -1,5 +1,6 @@
 pub mod arrow_bridge;
 pub mod ffi;
+pub mod json;
 pub mod provider;
 pub mod query;
 

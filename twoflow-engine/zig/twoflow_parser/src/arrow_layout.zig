@@ -1,10 +1,7 @@
 const std = @import("std");
+const ast = @import("ast.zig");
 
-pub const ParseStats = extern struct {
-    valid_lines: usize,
-    invalid_lines: usize,
-    total_lines: usize,
-};
+pub const ParseStats = ast.TwoFlowParseStats;
 
 pub const ArrowStringArray = struct {
     allocator: std.mem.Allocator,
@@ -34,36 +31,49 @@ pub const ArrowStringArray = struct {
     pub fn len(self: *const ArrowStringArray) usize {
         return if (self.offsets.items.len == 0) 0 else self.offsets.items.len - 1;
     }
-
-    pub fn rollback(self: *ArrowStringArray, offsets_len: usize, data_len: usize) void {
-        self.offsets.shrinkRetainingCapacity(offsets_len);
-        self.data.shrinkRetainingCapacity(data_len);
-    }
 };
 
 pub const ArrowRecordBatch2Flow = struct {
     subjects: ArrowStringArray,
     predicates: ArrowStringArray,
-    objects: ArrowStringArray,
+    values: ArrowStringArray,
 
     pub fn init(allocator: std.mem.Allocator) !ArrowRecordBatch2Flow {
         var subjects = try ArrowStringArray.init(allocator);
         errdefer subjects.deinit();
         var predicates = try ArrowStringArray.init(allocator);
         errdefer predicates.deinit();
-        var objects = try ArrowStringArray.init(allocator);
-        errdefer objects.deinit();
-        return .{ .subjects = subjects, .predicates = predicates, .objects = objects };
+        var values = try ArrowStringArray.init(allocator);
+        errdefer values.deinit();
+        return .{ .subjects = subjects, .predicates = predicates, .values = values };
     }
 
     pub fn deinit(self: *ArrowRecordBatch2Flow) void {
         self.subjects.deinit();
         self.predicates.deinit();
-        self.objects.deinit();
+        self.values.deinit();
         self.* = undefined;
     }
 
     pub fn rows(self: *const ArrowRecordBatch2Flow) usize {
         return self.subjects.len();
+    }
+
+    pub fn appendTriple(self: *ArrowRecordBatch2Flow, subject: []const u8, predicate: []const u8, value: []const u8) !void {
+        const s_offsets = self.subjects.offsets.items.len;
+        const s_data = self.subjects.data.items.len;
+        const p_offsets = self.predicates.offsets.items.len;
+        const p_data = self.predicates.data.items.len;
+        const v_offsets = self.values.offsets.items.len;
+        const v_data = self.values.data.items.len;
+        errdefer self.subjects.offsets.shrinkRetainingCapacity(s_offsets);
+        errdefer self.subjects.data.shrinkRetainingCapacity(s_data);
+        errdefer self.predicates.offsets.shrinkRetainingCapacity(p_offsets);
+        errdefer self.predicates.data.shrinkRetainingCapacity(p_data);
+        errdefer self.values.offsets.shrinkRetainingCapacity(v_offsets);
+        errdefer self.values.data.shrinkRetainingCapacity(v_data);
+        try self.subjects.append(subject);
+        try self.predicates.append(predicate);
+        try self.values.append(value);
     }
 };

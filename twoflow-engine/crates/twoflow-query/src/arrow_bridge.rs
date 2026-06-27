@@ -38,7 +38,7 @@ pub fn twoflow_schema() -> SchemaRef {
     Arc::new(Schema::new(vec![
         Field::new("subject", DataType::Utf8, false),
         Field::new("predicate", DataType::Utf8, false),
-        Field::new("object", DataType::Utf8, false),
+        Field::new("value", DataType::Utf8, false),
     ]))
 }
 
@@ -89,7 +89,7 @@ pub fn record_batch_from_zig(parsed: Arc<TwoFlowParsedBatch>) -> Result<TwoFlowA
     let columns: Vec<ArrayRef> = vec![
         Arc::new(string_array_from_zig_copying(&raw.subjects)?),
         Arc::new(string_array_from_zig_copying(&raw.predicates)?),
-        Arc::new(string_array_from_zig_copying(&raw.objects)?),
+        Arc::new(string_array_from_zig_copying(&raw.values)?),
     ];
     let record_batch = RecordBatch::try_new(schema, columns)?;
     Ok(TwoFlowArrowBatch {

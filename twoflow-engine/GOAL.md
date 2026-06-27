@@ -4,7 +4,7 @@ TwoFlowEngine starts a new graph execution path where `.2flow` is the primary lo
 
 ## Why replace RDF as the primary format?
 
-The `.2flow` format models semantic flows, operational graph relations, and directed domain edges directly. RDF can still be an interchange target in the future, but this project does not treat `.2flow` as serialized RDF and does not force every edge through RDF node/literal semantics.
+The `.2flow` format now uses 2Flow-Triples: compact subject-grouped relations that model semantic flows, operational graph relations, and directed domain edges directly. RDF can still be an interchange target in the future, but this project does not treat `.2flow` as serialized RDF and does not force every edge through RDF node/literal semantics.
 
 ## Why replace Spark/JVM with Zig + Rust?
 
@@ -34,8 +34,8 @@ DataFusion gives an embeddable Rust SQL engine, optimizer, physical execution pl
 
 ## MVP limits
 
-- `.2flow` only supports `Subject -> Predicate:Object` lines.
+- `.2flow` supports `Subject -> Predicate:Value, Predicate:Value` subject-grouped lines.
 - All values are Utf8; numeric/literal typing is intentionally not interpreted.
 - Inline comments are not parsed.
-- The Rust Arrow boundary currently uses a copying fallback.
+- The parser exports grouped JSON, canonical triples JSON and Arrow-compatible batches; the Rust Arrow boundary currently uses a copying fallback.
 - The actor runtime, partitioning, and Arrow IPC transport are roadmap items.

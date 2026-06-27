@@ -14,16 +14,20 @@ pub struct CArrowStringView {
 pub struct CArrowRecordBatch2Flow {
     pub subjects: CArrowStringView,
     pub predicates: CArrowStringView,
-    pub objects: CArrowStringView,
+    pub values: CArrowStringView,
     pub rows: usize,
     pub valid_lines: usize,
     pub invalid_lines: usize,
     pub total_lines: usize,
+    pub total_triples: usize,
 }
 
 unsafe extern "C" {
     pub fn twoflow_parse_buffer(ptr: *const u8, len: usize) -> *mut CArrowRecordBatch2Flow;
     pub fn twoflow_free_batch(batch: *mut CArrowRecordBatch2Flow);
+    pub fn twoflow_parse_grouped_json(ptr: *const u8, len: usize, out_len: *mut usize) -> *mut u8;
+    pub fn twoflow_parse_triples_json(ptr: *const u8, len: usize, out_len: *mut usize) -> *mut u8;
+    pub fn twoflow_free_json(ptr: *mut u8, len: usize);
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -31,6 +35,7 @@ pub struct ParseStats {
     pub valid_lines: usize,
     pub invalid_lines: usize,
     pub total_lines: usize,
+    pub total_triples: usize,
 }
 
 /// RAII owner for a Zig-allocated CArrowRecordBatch2Flow.
@@ -59,6 +64,7 @@ impl TwoFlowParsedBatch {
             valid_lines: raw.valid_lines,
             invalid_lines: raw.invalid_lines,
             total_lines: raw.total_lines,
+            total_triples: raw.total_triples,
         }
     }
 }
@@ -83,4 +89,25 @@ pub fn parse_2flow_buffer(input: &[u8]) -> Result<TwoFlowParsedBatch> {
         raw,
         _not_send_sync: PhantomData,
     })
+}
+
+pub(crate) fn parse_json_with(
+    input: &[u8],
+    f: unsafe extern "C" fn(*const u8, usize, *mut usize) -> *mut u8,
+) -> Result<String> {
+    let mut len = 0usize;
+    // SAFETY: input pointer is valid for the call. Zig returns an allocated JSON
+    // buffer and length that must be released exactly once with twoflow_free_json.
+    let ptr = unsafe { f(input.as_ptr(), input.len(), &mut len as *mut usize) };
+    let ptr = NonNull::new(ptr)
+        .ok_or_else(|| DataFusionError::Execution("Zig JSON export returned null".to_string()))?;
+    // SAFETY: Zig returned ptr/len for a valid allocation. We copy into a Rust
+    // String before freeing the Zig buffer, so no borrowed data outlives it.
+    let bytes = unsafe { std::slice::from_raw_parts(ptr.as_ptr(), len) };
+    let json = std::str::from_utf8(bytes)
+        .map_err(|err| DataFusionError::Execution(format!("Zig JSON was not UTF-8: {err}")))?
+        .to_owned();
+    // SAFETY: ptr/len came from the Zig JSON allocator and have not been freed.
+    unsafe { twoflow_free_json(ptr.as_ptr(), len) };
+    Ok(json)
 }

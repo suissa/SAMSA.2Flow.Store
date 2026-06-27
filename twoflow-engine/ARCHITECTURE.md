@@ -2,7 +2,7 @@
 
 ## Layers
 
-1. **Zig parser**: scans `.2flow` bytes line by line, validates delimiters with SIMD-assisted search, and writes accepted tokens into Arrow-compatible column buffers.
+1. **Zig parser**: scans `.2flow` bytes line by line, validates delimiters with SIMD-assisted search, builds a lightweight AST, expands subject-grouped pairs to canonical triples, and writes accepted triples into Arrow-compatible column buffers.
 2. **Zig columnar layout**: stores each Utf8 column as `offsets: [i32]` and concatenated `data: [u8]`. Nulls are not supported in the MVP.
 3. **C ABI FFI**: exposes stable `extern struct` views over Zig-owned buffers and explicit `twoflow_free_batch` ownership release.
 4. **Rust Arrow bridge**: reconstructs Rust Arrow arrays and `RecordBatch` values from the Zig FFI view.
@@ -56,7 +56,7 @@ The copying fallback is intentional and honest: Arrow Rust arrays own their buff
 ## Roadmap: SPARQL-like planner over 2flow
 
 - Define a `.2flow` graph algebra instead of mapping directly to RDF.
-- Add pattern matching and path expressions over `subject`, `predicate`, and `object` columns.
+- Add pattern matching and path expressions over `subject`, `predicate`, and `value` columns.
 - Lower graph patterns into DataFusion logical plans.
 
 ## Roadmap: partitioning and dynamic sharding

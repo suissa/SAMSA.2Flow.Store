@@ -1,4 +1,4 @@
-Torre_Eiffel -> altura:330
-Torre_Eiffel -> localizacao:Paris
-Paris -> pais:Franca
-Usuario_123 -> intent:ComprarPizza
+Torre_Eiffel -> localizacao:Paris, altura:330, tipo:Monumento
+Paris -> pais:Franca, continente:Europa
+AllasCode.Institute -> tipo:ResearchInstitute, foco:AgenticSystems
+Usuario_123 -> intent:ComprarPizza, canal:WhatsApp
