@@ -1,0 +1,4 @@
+Torre_Eiffel -> altura:330
+Torre_Eiffel -> localizacao:Paris
+Paris -> pais:Franca
+Usuario_123 -> intent:ComprarPizza
