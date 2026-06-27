@@ -1,0 +1,16 @@
+[package]
+name = "twoflow-query"
+version = "0.1.0"
+edition = "2024"
+build = "build.rs"
+
+[dependencies]
+arrow = "53.4.1"
+arrow-array = "53.4.1"
+arrow-buffer = "53.4.1"
+arrow-schema = "53.4.1"
+async-trait = "0.1"
+datafusion = "42"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[build-dependencies]
