@@ -67,3 +67,11 @@ Expected result:
 - No RDF parser and no conversion from `.2flow` to RDF. See `FORMAT.md` for the formal 2Flow-Triples syntax.
 - No JSON intermediate format.
 - No distributed actor runtime yet; the actor layer is part of the architecture roadmap.
+
+## 2FlowQL example
+
+```2flowql
+@2Flow.Store ? Torre_Eiffel -> altura => value;
+```
+
+Use `query_2flowql_json(input, query)` from the Rust API to execute graph-path DSL queries without exposing SQL to users. See `2FLOWQL.md`.

@@ -64,3 +64,7 @@ The copying fallback is intentional and honest: Arrow Rust arrays own their buff
 - Partition by subject, predicate, domain-specific keys, or runtime heuristics.
 - Track hot predicates and skew.
 - Add adaptive re-sharding for long-running actor clusters.
+
+## 2FlowQL layer
+
+The Rust query crate now includes a lexer, parser, typed AST, semantic validator, in-memory executor and JSON result serializer for 2FlowQL. The public DSL avoids SQL/SPARQL/RDF syntax; DataFusion lowering remains an internal roadmap item.
